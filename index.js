@@ -7,9 +7,10 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-const openai = new OpenAIApi(new Configuration({
-  apiKey: process.env.OPENAI_API_KEY // Sicher über Render Environment gesetzt!
-}));
+const OpenAI = require('openai');
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 app.post('/chat', async (req, res) => {
   const { company, email, contact, phone, industry, description } = req.body;
