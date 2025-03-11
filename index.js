@@ -1,31 +1,13 @@
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const OpenAI = require('openai'); // Neue SDK von OpenAI
-
-const app = express();
-const PORT = process.env.PORT || 3000; // Fix: Fallback Port zu 3000
-
-app.use(cors());
-app.use(bodyParser.json());
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY // Stelle sicher, dass das API Key in Render als Umgebungsvariable gesetzt ist
-});
-
 app.post('/chat', async (req, res) => {
-  const { company, email, contact, phone, industry, description } = req.body;
+  const { land, industry, service } = req.body;
 
   const userPrompt = `
-Unternehmen: ${company}
-E-Mail: ${email}
-Kontaktperson: ${contact}
-Telefon: ${phone}
-Branche: ${industry}
-Beschreibung: ${description}
+Ich suche nach aktuellen öffentlichen Ausschreibungen in folgendem Land: ${land}.
+Industrie: ${industry}
+Gesuchte Leistung: ${service}
 
-Basierend auf diesen Daten, finde passende aktuelle öffentliche Ausschreibungen.
-Antworte bitte nur mit einer Liste von Vergaben. Keine Einleitung.
+Bitte finde dazu passende öffentliche Ausschreibungen und gib mir eine Liste zurück.
+Bitte keine Einleitung, nur die Liste.
 `;
 
   try {
@@ -44,5 +26,3 @@ Antworte bitte nur mit einer Liste von Vergaben. Keine Einleitung.
     res.status(500).json({ error: 'Fehler bei GPT-Antwort.' });
   }
 });
-
-app.listen(PORT, () => console.log(`Server läuft auf Port ${PORT}`));
