@@ -43,5 +43,5 @@ Antworte bitte nur mit einer Liste von Vergaben. Keine Einleitung.
   }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 app.listen(PORT, () => console.log(`Server läuft auf Port ${PORT}`));
