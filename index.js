@@ -1,30 +1,47 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const OpenAI = require('openai'); // Neue SDK von OpenAI
+const OpenAI = require('openai'); // OpenAI SDK
 
-const app = express(); // ✅ This defines app correctly
-
-const PORT = process.env.PORT || 3000; // Use Render's port or fallback to 3000
+const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(bodyParser.json());
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY // Make sure to set this in Render environment variables
+  apiKey: process.env.OPENAI_API_KEY
 });
 
 app.post('/chat', async (req, res) => {
-  const { land, industry, service } = req.body; // Use the corrected input fields
+  const { land, industry, service, source } = req.body; // Neu: source (TED oder BUND)
 
-  const userPrompt = `
-Ich suche nach aktuellen öffentlichen Ausschreibungen in folgendem Land: ${land}.
+  let userPrompt = '';
+
+  // Je nach Auswahl anderes Prompt
+  if (source === 'TED') {
+    userPrompt = `
+Ich suche nach aktuellen öffentlichen EU-Ausschreibungen (TED) für folgendes Land: ${land}.
 Industrie: ${industry}
 Gesuchte Leistung: ${service}
 
-Bitte finde dazu passende öffentliche Ausschreibungen und gib mir eine Liste zurück.
-Bitte keine Einleitung, nur die Liste.
-`;
+Bitte finde passende EU-Ausschreibungen auf TED (Tenders Electronic Daily).
+Gib mir eine Liste von max. 5 relevanten Ausschreibungen. 
+Keine Einleitung, nur die Liste mit Titel und Kurzbeschreibung.
+    `;
+  } else if (source === 'BUND') {
+    userPrompt = `
+Ich suche nach aktuellen öffentlichen nationalen Ausschreibungen in Deutschland (bund.de).
+Branche: ${industry}
+Gesuchte Leistung: ${service}
+
+Bitte finde passende nationale Ausschreibungen auf bund.de.
+Gib mir eine Liste von max. 5 relevanten Ausschreibungen.
+Keine Einleitung, nur die Liste mit Titel und Kurzbeschreibung.
+    `;
+  } else {
+    return res.status(400).json({ error: 'Ungültige Auswahl für Quelle (TED oder BUND).' });
+  }
 
   try {
     const gptResponse = await openai.chat.completions.create({
@@ -33,7 +50,7 @@ Bitte keine Einleitung, nur die Liste.
     });
 
     const reply = gptResponse.choices[0].message.content;
-    console.log('GPT Antwort:', reply); // For debugging
+    console.log('GPT Antwort:', reply);
 
     res.json({ reply });
 
@@ -43,5 +60,4 @@ Bitte keine Einleitung, nur die Liste.
   }
 });
 
-// ✅ Start the server
 app.listen(PORT, () => console.log(`Server läuft auf Port ${PORT}`));
