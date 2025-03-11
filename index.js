@@ -1,14 +1,16 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const OpenAI = require('openai'); // nur die neue SDK
+const OpenAI = require('openai'); // Neue SDK von OpenAI
 
 const app = express();
+const PORT = process.env.PORT || 3000; // Fix: Fallback Port zu 3000
+
 app.use(cors());
 app.use(bodyParser.json());
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY // Stelle sicher, dass das API Key in Render als Umgebungsvariable gesetzt ist
 });
 
 app.post('/chat', async (req, res) => {
@@ -32,9 +34,9 @@ Antworte bitte nur mit einer Liste von Vergaben. Keine Einleitung.
       messages: [{ role: 'user', content: userPrompt }],
     });
 
-    console.log('GPT Antwort:', gptResponse); // für Debugging
-
     const reply = gptResponse.choices[0].message.content;
+    console.log('GPT Antwort:', reply); // Nur relevante Antwort loggen
+
     res.json({ reply });
 
   } catch (error) {
@@ -43,5 +45,4 @@ Antworte bitte nur mit einer Liste von Vergaben. Keine Einleitung.
   }
 });
 
-const PORT = process.env.PORT;
 app.listen(PORT, () => console.log(`Server läuft auf Port ${PORT}`));
